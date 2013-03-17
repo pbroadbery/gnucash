@@ -25,7 +25,8 @@ gncscmmod_DATA = \
 gncscmreportmoddir = ${GNC_SHAREDIR}/guile-modules/gnucash/report/blah-reports
 gncscmreportmod_DATA = \
    net-barchart.scm \
-   category-barchart.scm
+   category-barchart.scm \
+   reports-2.scm
 
 if GNUCASH_SEPARATE_BUILDDIR
 #For executing test cases

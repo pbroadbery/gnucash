@@ -24,6 +24,8 @@
 
 ;; depends must be outside module scope -- and should eventually go away.
 (define-module (gnucash report blah-reports category-barchart))
+(use-modules (gnucash report blah-reports reports-2))
+(use-modules (gnucash report report-system streamers))
 (use-modules (srfi srfi-1))
 (use-modules (gnucash main)) ;; FIXME: delete after we finish modularizing.
 (use-modules (ice-9 regex))
@@ -333,34 +335,6 @@ developing over time"))
                 (lambda (a b) (exchange-fn a b date)))))
              averaging-multiplier))
 
-          ;; Calculates the net balance (profit or loss) of an account in
-          ;; the given time interval. date-list-entry is a pair containing
-          ;; the start- and end-date of that interval. If subacct?==#t,
-          ;; the subaccount's balances are included as well. Returns a
-          ;; double, exchanged into the report-currency by the above
-          ;; conversion function, and possibly with reversed sign.
-          (define (get-balance account date-list-entry subacct?)
-            ((if (reverse-balance? account)
-                 - +)
-             (if do-intervals?
-                 (collector->double
-                  (gnc:account-get-comm-balance-interval
-                   account
-                   (first date-list-entry)
-                   (second date-list-entry) subacct?)
-                  (second date-list-entry))
-                 (collector->double
-                  (gnc:account-get-comm-balance-at-date
-                   account date-list-entry subacct?)
-                  date-list-entry))))
-
-          ;; Creates the <balance-list> to be used in the function
-          ;; below.
-          (define (account->balance-list account subacct?)
-            (map
-             (lambda (d) (get-balance account d subacct?))
-             dates-list))
-
 	  (define (count-accounts current-depth accts)
 	    (if (< current-depth tree-depth)
 		(let ((sum 0))
@@ -386,32 +360,21 @@ developing over time"))
           ;; show-acct? is true. This is necessary because otherwise we
           ;; would forget an account that is selected but not its
           ;; parent.
-          (define (traverse-accounts current-depth accts)
-            (if (< current-depth tree-depth)
-                (let ((res '()))
-                  (for-each
-                   (lambda (a)
-                     (begin
-		       (set! work-done (+ 1 work-done))
-		       (gnc:report-percent-done (+ 20 (* 70 (/ work-done work-to-do))))
-                       (if (show-acct? a)
-                           (set! res
-                                 (cons (list a (account->balance-list a #f))
-                                       res)))
-                       (set! res (append
-                                  (traverse-accounts
-                                   (+ 1 current-depth)
-                                   (gnc-account-get-children a))
-                                  res))))
-                   accts)
-                  res)
-                ;; else (i.e. current-depth == tree-depth)
-                (map
-                 (lambda (a)
-		   (set! work-done (+ 1 work-done))
-		   (gnc:report-percent-done (+ 20 (* 70 (/ work-done work-to-do))))
-                   (list a (account->balance-list a #t)))
-                 (filter show-acct? accts))))
+          (define (calculate-report accounts)
+	    (let* ((the-acount-destination-alist (account-destination-alist accounts
+									    account-types
+									    tree-depth))
+		   (the-report (category-by-account-report
+				dates-list the-acount-destination-alist
+				(lambda (account date)
+				  (collector-reformat (if (reverse-balance? account)
+							  (lambda (result) (- (collector->double result date)))
+							  (lambda (result) (collector->double result date)))
+						      (make-gnc-collector-collector))))))
+	      (format #t "account-map ~a\n" (map (lambda (pair) (cons (xaccAccountGetName (car pair))
+								      (xaccAccountGetName (cdr pair))))
+						 the-acount-destination-alist))
+	      the-report))
 
           ;; The percentage done numbers here are a hack so that
           ;; something gets displayed. On my system the
@@ -436,7 +399,7 @@ developing over time"))
           (set! all-data (sort
                           (filter (lambda (l)
                                     (not (= 0.0 (apply + (cadr l)))))
-                                  (traverse-accounts 1 topl-accounts))
+                                  (calculate-report accounts))
 			  (cond
 			   ((eq? sort-method 'acct-code)
 			    (lambda (a b)
@@ -675,7 +638,6 @@ developing over time"))
 
     (gnc:report-finished)
     document))
-
 
 (export category-barchart-income-uuid category-barchart-expense-uuid
 	category-barchart-asset-uuid category-barchart-liability-uuid)
