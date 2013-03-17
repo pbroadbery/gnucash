@@ -1,6 +1,7 @@
 NONGUI_SUBDIRS = \
   report-system \
   standard-reports \
+  blah-reports   \
   utility-reports \
   business-reports \
   locale-specific \
