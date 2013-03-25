@@ -360,20 +360,30 @@ developing over time"))
           ;; show-acct? is true. This is necessary because otherwise we
           ;; would forget an account that is selected but not its
           ;; parent.
+	  (define (apply-sign account x)
+	    (if (reverse-balance? account) (- x) x))
           (define (calculate-report accounts)
 	    (let* ((the-acount-destination-alist (account-destination-alist accounts
 									    account-types
 									    tree-depth))
-		   (the-report (category-by-account-report
+		   (the-report (category-by-account-report do-intervals?
 				dates-list the-acount-destination-alist
 				(lambda (account date)
-				  (collector-reformat (if (reverse-balance? account)
-							  (lambda (result) (- (collector->double result date)))
-							  (lambda (result) (collector->double result date)))
-						      (make-gnc-collector-collector))))))
-	      (format #t "account-map ~a\n" (map (lambda (pair) (cons (xaccAccountGetName (car pair))
-								      (xaccAccountGetName (cdr pair))))
-						 the-acount-destination-alist))
+				  (make-gnc-collector-collector))
+				(if do-intervals?
+				    (lambda (account result)
+				      (map (lambda (collector date)
+					     (apply-sign account (collector->double collector date)))
+					   result dates-list))
+				    (lambda (account result)
+				      (let ((commodity-collector (gnc:make-commodity-collector)))
+					(collector-end (fold (lambda (next date list-collector)
+							       (commodity-collector 'merge next #f)
+							       (collector-add list-collector
+									      (apply-sign account (collector->double commodity-collector
+														     date))))
+							     (collector-into-list)
+							     result dates-list))))))))
 	      the-report))
 
           ;; The percentage done numbers here are a hack so that
@@ -655,8 +665,8 @@ developing over time"))
       'name (car l)
       'report-guid (car (reverse l))
       'menu-path (if (caddr l)
-		     (list gnc:menuname-income-expense)
-		     (list gnc:menuname-asset-liability))
+		     (list gnc:menuname-blah-income-expense)
+		     (list gnc:menuname-blah-asset-liability))
       'menu-name (cadddr l)
       'menu-tip (car tip-and-rev)
       'options-generator (lambda () (options-generator (cadr l)
@@ -683,3 +693,4 @@ developing over time"))
         (list ACCT-TYPE-LIABILITY ACCT-TYPE-PAYABLE ACCT-TYPE-CREDIT
               ACCT-TYPE-CREDITLINE)
         #f menuname-liabilities menutip-liabilities (lambda (x) #t) "a99ce901920641118bb7c3a6035fc3ff")))
+

@@ -2,7 +2,7 @@
 ;;  standard-reports.scm
 ;;  load the standard report definitions
 ;;
-;;  Copyright (c) 2001 Linux Developers Group, Inc. 
+;;  Copyright (c) 2001 Linux Developers Group, Inc.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-module (gnucash report standard-reports))
@@ -129,6 +129,10 @@
 		    (current-module)
 			(resolve-interface (append '(gnucash report standard-reports) (list x)))))
 	(get-report-list))
+
+
+(module-use! (current-module) (resolve-interface '(gnucash report blah-reports category-barchart)))
+;(use-modules (gnucash report blah-reports net-barchart))
 
 (use-modules (gnucash gnc-module))
 (gnc:module-load "gnucash/engine" 0)

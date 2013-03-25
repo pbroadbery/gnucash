@@ -9,6 +9,7 @@ GNC_TEST_DEPS = \
   --gnc-module-dir ${top_builddir}/src/report/report-system \
   --gnc-module-dir ${top_builddir}/src/report/report-system/test \
   --gnc-module-dir ${top_builddir}/src/report/standard-reports \
+  --gnc-module-dir ${top_builddir}/src/report/blah-reports \
   --gnc-module-dir ${top_builddir}/src/report/standard-reports/test \
 \
   --guile-load-dir ${top_builddir}/src/gnc-module \
@@ -20,6 +21,7 @@ GNC_TEST_DEPS = \
   --guile-load-dir ${top_builddir}/src/report/report-system \
   --guile-load-dir ${top_builddir}/src/report/report-system/test \
   --guile-load-dir ${top_builddir}/src/report/standard-reports \
+  --guile-load-dir ${top_builddir}/src/report/blah-reports \
   --guile-load-dir ${top_builddir}/src/report/standard-reports/test \
 \
   --library-dir    ${top_builddir}/src/libqof/qof \

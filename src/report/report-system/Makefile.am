@@ -54,11 +54,15 @@ gncscm_DATA = \
      html-jqplot.scm \
      options-utilities.scm \
      report-utilities.scm \
-     report.scm \
-     streamers.scm \
-     list-extras.scm
+     report.scm
 
 gncmoddir = ${GNC_SHAREDIR}/guile-modules/gnucash/report-system
+
+gncmodscmdir = ${GNC_SHAREDIR}/guile-modules/gnucash/report/report-system
+
+gncmodscm_DATA = \
+     streamers.scm \
+     list-extras.scm
 
 gncscmmoddir = ${GNC_SHAREDIR}/guile-modules/gnucash/report/
 gncscmmod_DATA = \

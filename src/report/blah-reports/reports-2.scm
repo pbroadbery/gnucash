@@ -87,12 +87,12 @@
 				dates)))
     (collector-from-slotset slotset per-date-collector)))
 
-(define (build-category-by-account-collector accounts account-destination-alist dates cell-accumulator)
+(define (build-category-by-account-collector accounts account-destination-alist dates cell-accumulator result-collector)
   (build-account-collector accounts account-destination-alist
 			   xaccSplitGetAccount
 			   (lambda (account)
 			     (collector-reformat (lambda (result)
-						   (list account result))
+						   (list account (result-collector account result)))
 						 (build-date-collector split->date dates
 								       (lambda (date)
 									 (cell-accumulator account date)))))))
@@ -103,8 +103,13 @@
   (collector-reformat evaluate collector))
 
 
-(define (category-by-account-report datepairs account-alist split-collector)
-   (let* ((min-date (car (list-min-max (map first datepairs) gnc:timepair-lt)))
+(define (category-by-account-report do-intervals? datepairs account-alist split-collector result-collector)
+  (if do-intervals?
+      (category-by-account-report-intervals datepairs account-alist split-collector result-collector)
+      (category-by-account-report-accumulate datepairs account-alist split-collector result-collector)))
+
+(define (category-by-account-report-intervals datepairs account-alist split-collector result-collector)
+  (let* ((min-date (car (list-min-max (map first datepairs) gnc:timepair-lt)))
 	  (max-date (cdr (list-min-max (map second datepairs) gnc:timepair-lt)))
 	  (dest-accounts (collector-add-all (make-eq-set-collector '())
 					    (map cdr account-alist)))
@@ -112,8 +117,25 @@
 			      min-date max-date))
 	  (collector (build-category-by-account-collector dest-accounts
 							 account-alist datepairs
-							 split-collector)))
+							 split-collector
+							 result-collector)))
      (collector-add-all collector splits)))
+
+(define (category-by-account-report-accumulate dates account-alist split-collector result-collector)
+  (let* ((min-date (gnc:secs->timepair 0))
+	 (max-date (cdr (list-min-max dates gnc:timepair-lt)))
+	 (datepairs (reverse! (cdr (fold (lambda (next acc)
+					   (let ((prev (car acc))
+						 (pairs-so-far (cdr acc)))
+					     (cons next (cons (list prev next) pairs-so-far))))
+					 (cons min-date '()) dates))))
+	 (dest-accounts (collector-add-all (make-eq-set-collector '())
+					   (map cdr account-alist)))
+	 (splits (splits-up-to (map car account-alist)
+			       min-date max-date))
+	 (collector (build-category-by-account-collector dest-accounts account-alist datepairs split-collector result-collector)))
+    (collector-add-all collector splits)))
+
 
 (define (gnc-account-child-accounts-recursive account)
   (define (helper account initial)

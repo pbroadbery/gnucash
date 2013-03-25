@@ -22,4 +22,5 @@
 (use-modules (gnucash report standard-reports category-barchart))
 
 (define (run-test)
-  (run-category-report-test category-barchart-income-uuid category-barchart-expense-uuid))
+  (run-category-income-expense-test category-barchart-income-uuid category-barchart-expense-uuid)
+  (run-category-asset-liability-test category-barchart-asset-uuid category-barchart-liability-uuid))

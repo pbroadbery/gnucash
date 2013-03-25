@@ -1287,6 +1287,8 @@ AC_CONFIG_FILES(
   src/report/report-system/test/Makefile
   src/report/standard-reports/Makefile
   src/report/standard-reports/test/Makefile
+  src/report/blah-reports/Makefile
+  src/report/blah-reports/test/Makefile
   src/report/business-reports/Makefile
   src/report/locale-specific/Makefile
   src/report/locale-specific/us/Makefile

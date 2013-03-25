@@ -46,6 +46,9 @@
 (define gnc:optname-reportname (N_ "Report name"))
 (define gnc:optname-stylesheet (N_ "Stylesheet"))
 
+(define gnc:menuname-blah-asset-liability (N_ "_Blah - assets & liabilities"))
+(define gnc:menuname-blah-income-expense (N_ "b_Lah - income & expense"))
+
 ;; we want to warn users if they've got an old-style, non-guid saved
 ;; report, but only once
 (define gnc:old-style-report-warned #f)

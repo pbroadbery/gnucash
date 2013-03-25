@@ -109,6 +109,8 @@
 (export gnc:menuname-taxes)
 (export gnc:menuname-utility)
 (export gnc:menuname-custom)
+(export gnc:menuname-blah-asset-liability)
+(export gnc:menuname-blah-income-expense)
 (export gnc:pagename-general)
 (export gnc:pagename-accounts)
 (export gnc:pagename-display)

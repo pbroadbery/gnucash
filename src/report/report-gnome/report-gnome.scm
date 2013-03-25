@@ -98,6 +98,11 @@
 
 
 (define (gnc:report-menu-setup)
+  (define blah-asset-liability-menu
+    (gnc:make-menu gnc:menuname-blah-asset-liability (list gnc:menuname-reports)))
+  (define blah-income-expense-menu
+    (gnc:make-menu gnc:menuname-blah-income-expense (list gnc:menuname-reports)))
+
   (define asset-liability-menu
     (gnc:make-menu gnc:menuname-asset-liability (list gnc:menuname-reports)))
   (define income-expense-menu
@@ -106,10 +111,10 @@
     (gnc:make-menu gnc:menuname-budget (list gnc:menuname-reports)))
   (define utility-menu
     (gnc:make-menu gnc:menuname-utility (list gnc:menuname-reports)))
-  (define tax-menu 
+  (define tax-menu
     (gnc:make-menu gnc:menuname-taxes (list gnc:menuname-reports)))
 
-  (gnc-add-scm-extension 
+  (gnc-add-scm-extension
    (gnc:make-menu-item
    (N_ "Custom Reports")
    "4d3dcdc8890b11df99dd94cddfd72085"
@@ -119,6 +124,9 @@
      (gnc:spawn-custom-report-dialog window))))
 
   ;; (gnc-add-scm-extension tax-menu)
+  (gnc-add-scm-extension blah-income-expense-menu)
+  (gnc-add-scm-extension blah-asset-liability-menu)
+
   (gnc-add-scm-extension income-expense-menu)
   (gnc-add-scm-extension asset-liability-menu)
   (gnc-add-scm-extension budget-menu)
