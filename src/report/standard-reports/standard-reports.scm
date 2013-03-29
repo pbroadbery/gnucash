@@ -132,6 +132,7 @@
 
 
 (module-use! (current-module) (resolve-interface '(gnucash report blah-reports category-barchart)))
+(module-use! (current-module) (resolve-interface '(gnucash report blah-reports net-barchart)))
 ;(use-modules (gnucash report blah-reports net-barchart))
 
 (use-modules (gnucash gnc-module))
