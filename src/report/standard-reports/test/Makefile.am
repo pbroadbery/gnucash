@@ -41,11 +41,16 @@ TESTS_ENVIRONMENT = \
 
 EXTRA_DIST = test-load-module
 
-SCM_TESTS = test-standard-category-report.scm
+SCM_TESTS = \
+	test-standard-category-report.scm \
+	test-standard-net-barchart.scm
 
 if GNUCASH_SEPARATE_BUILDDIR
 #For executing test cases
-SCM_FILE_LINKS = test-generic-category-report.scm $(SCM_TESTS)
+SCM_FILE_LINKS = \
+	test-generic-category-report.scm \
+	test-generic-net-barchart.scm \
+	$(SCM_TESTS)
 endif
 
 .scm-links:
