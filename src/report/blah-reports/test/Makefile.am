@@ -32,7 +32,9 @@ GNC_TEST_DEPS = --gnc-module-dir ${top_builddir}/src/engine \
   --library-dir    ${top_builddir}/src/backend/sql \
   --library-dir    ${top_builddir}/src/gnc-module
 
-SCM_TESTS = test-blah-category-report.scm
+SCM_TESTS = \
+	test-blah-category-report.scm \
+	test-blah-net-barchart.scm
 
 if GNUCASH_SEPARATE_BUILDDIR
 #For executing test cases
