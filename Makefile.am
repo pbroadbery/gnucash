@@ -1,4 +1,5 @@
 
+
 SUBDIRS = . doc lib src intl-scm packaging po accounts checks
 
 GNC_CTAGS_FILE = @GNC_CTAGS_FILE@
