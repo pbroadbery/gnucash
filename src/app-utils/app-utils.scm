@@ -219,6 +219,7 @@
 (export gnc:timepair-start-day-time)
 (export gnc:timepair-end-day-time)
 (export gnc:timepair-previous-day)
+(export gnc:timepair-next-day)
 (export gnc:reldate-get-symbol)
 (export gnc:reldate-get-string)
 (export gnc:reldate-get-desc)
