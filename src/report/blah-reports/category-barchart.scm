@@ -327,6 +327,8 @@ developing over time"))
           (define (collector->double c date)
             ;; Future improvement: Let the user choose which kind of
             ;; currency combining she want to be done.
+	    (if (not (gnc:timepair? date))
+		(throw 'wrong))
             (*
               (gnc-numeric-to-double
               (gnc:gnc-monetary-amount
