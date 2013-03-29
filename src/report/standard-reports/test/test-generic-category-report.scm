@@ -225,5 +225,19 @@
 	(let ((doc (asset-renderer asset-report)))
 	  (gnc:html-document-set-style-sheet! doc
 					      (gnc:report-stylesheet asset-report))
-	  (let* ((result (gnc:html-document-render doc #f)))
-	    (format #t "Report: ~a\n" result)))))))
+	  (let* ((html-document (gnc:html-document-render doc #f))
+		 (columns (columns-from-report-document html-document))
+		 (tbl (stream->list
+		       (pattern-streamer "<tr>"
+					 (list (list "<string> ([0-9][0-9])/([0-9][0-9])/([0-9][0-9])</td>" 1 2 3)
+					       (list "<number> ([^<]*)</td>" 1))
+					 html-document)))
+		 (row-count (tbl-row-count tbl)))
+	    (format #t "Report: ~a\n" tbl)
+	    (logging-and (member "account-1" columns)
+			 (= 2 (length columns))
+			 (= 1 (string->number (car (tbl-ref tbl 0 1))))
+			 (= (/ (* row-count (+ row-count 1)) 2)
+			    (string->number (car (tbl-ref tbl (- row-count 1) 1))))
+			 #t)))))))
+
