@@ -366,24 +366,29 @@ developing over time"))
 	    (let* ((the-acount-destination-alist (account-destination-alist accounts
 									    account-types
 									    tree-depth))
+		   (account-reformat
+		    (if do-intervals?
+			(lambda (account result)
+			  (map (lambda (collector datepair)
+				 (let ((date (second datepair)))
+				   (apply-sign account (collector->double collector date))))
+			       result dates-list))
+			(lambda (account result)
+			  (let ((commodity-collector (gnc:make-commodity-collector)))
+			    (collector-end (fold (lambda (next date list-collector)
+						   (commodity-collector 'merge next #f)
+						   (collector-add list-collector
+								  (apply-sign account
+									      (collector->double commodity-collector
+												 date))))
+						 (collector-into-list)
+						 result dates-list))))))
+
 		   (the-report (category-by-account-report do-intervals?
 				dates-list the-acount-destination-alist
 				(lambda (account date)
 				  (make-gnc-collector-collector))
-				(if do-intervals?
-				    (lambda (account result)
-				      (map (lambda (collector date)
-					     (apply-sign account (collector->double collector date)))
-					   result dates-list))
-				    (lambda (account result)
-				      (let ((commodity-collector (gnc:make-commodity-collector)))
-					(collector-end (fold (lambda (next date list-collector)
-							       (commodity-collector 'merge next #f)
-							       (collector-add list-collector
-									      (apply-sign account (collector->double commodity-collector
-														     date))))
-							     (collector-into-list)
-							     result dates-list))))))))
+				account-reformat)))
 	      the-report))
 
           ;; The percentage done numbers here are a hack so that
