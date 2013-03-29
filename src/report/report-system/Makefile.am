@@ -64,6 +64,7 @@ gncmodscm_DATA = \
      streamers.scm \
      list-extras.scm
 
+
 gncscmmoddir = ${GNC_SHAREDIR}/guile-modules/gnucash/report/
 gncscmmod_DATA = \
     report-system.scm \
@@ -90,7 +91,7 @@ if GNUCASH_SEPARATE_BUILDDIR
 	done
 endif
 	( cd gnucash/report; for A in $(gncscmmod_DATA) ; do $(LN_S) -f ../../$$A . ; done )
-	( cd gnucash/report/report-system; for A in $(gncscm_DATA) ; do $(LN_S) -f ../../../$$A . ; done )
+	( cd gnucash/report/report-system; for A in $(gncmodscm_DATA) ; do $(LN_S) -f ../../../$$A . ; done )
 if ! OS_WIN32
 # Windows knows no "ln -s" but uses "cp": must copy every time (see bug #566567).
 	touch .scm-links
