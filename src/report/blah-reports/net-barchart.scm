@@ -262,7 +262,11 @@
                                    gnc-print-date)
                                dates-list)))
        (let* ((the-acount-destination-alist
-	       (if inc-exp? (map (lambda (account) (cons account 'all)) accounts)
+	       (if inc-exp?
+		   (append (map (lambda (account) (cons account 'asset))
+				 (assoc-ref classified-accounts ACCT-TYPE-INCOME))
+			   (map (lambda (account) (cons account 'liability))
+				 (assoc-ref classified-accounts ACCT-TYPE-EXPENSE)))
 		   (append  (map (lambda (account) (cons account 'asset))
 				 (assoc-ref classified-accounts ACCT-TYPE-ASSET))
 			    (map (lambda (account) (cons account 'liability))
@@ -270,7 +274,7 @@
 	      (account-reformat (if inc-exp?
 				    (lambda (account result)
 				      (map (lambda (collector date-interval)
-					     (collector->double collector (second date-interval)))
+					     (- (collector->double collector (second date-interval))))
 					   result dates-list))
 				    (lambda (account result)
 				      (let ((commodity-collector (gnc:make-commodity-collector)))
