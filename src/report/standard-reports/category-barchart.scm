@@ -676,6 +676,8 @@ developing over time"))
     (gnc:report-finished)
     document))
 
+;; Export reports
+
 (export category-barchart-income-uuid category-barchart-expense-uuid
 	category-barchart-asset-uuid category-barchart-liability-uuid)
 
