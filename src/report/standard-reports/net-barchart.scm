@@ -416,6 +416,8 @@
     (gnc:report-finished)
     document))
 
+;; Export reports
+
 (export net-worth-barchart-uuid)
 (export income-expense-chart-uuid)
 
