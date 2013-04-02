@@ -470,6 +470,8 @@
     (gnc:report-finished)
     document))
 
+;; Export reports
+
 (export net-worth-linechart-uuid)
 (define net-worth-linechart-uuid "d8b63264186b11e19038001558291366")
 
