@@ -156,6 +156,7 @@
 (export gnc:secs->timepair)
 (export gnc:timepair->date)
 (export gnc:date->timepair)
+(export gnc:timepair?)
 (export gnc:date-get-year)
 (export gnc:date-get-quarter)
 (export gnc:date-get-month-day)
