@@ -647,20 +647,22 @@
       (let ((template (hash-ref *gnc:_report-templates_* 
                                 (gnc:report-type report)))
 	    (doc #f))
-        (set! doc (if template
-                      (let* ((renderer (gnc:report-template-renderer template))
-                             (stylesheet (gnc:report-stylesheet report))
-                             (doc (renderer report))
-                             (html #f))
-                        (if (string? doc)
-                          (set! html doc)
-                          (begin 
-                            (gnc:html-document-set-style-sheet! doc stylesheet)
-                            (set! html (gnc:html-document-render doc headers?))))
-                        (gnc:report-set-ctext! report html) ;; cache the html
-                        (gnc:report-set-dirty?! report #f)  ;; mark it clean
-                        html)
-                      #f))
+	(let ((now (tms:clock (times))))
+	  (set! doc (if template
+			(let* ((renderer (gnc:report-template-renderer template))
+			       (stylesheet (gnc:report-stylesheet report))
+			       (doc (renderer report))
+			       (html #f))
+			  (if (string? doc)
+			      (set! html doc)
+			      (begin
+				(gnc:html-document-set-style-sheet! doc stylesheet)
+				(set! html (gnc:html-document-render doc headers?))))
+			  (gnc:report-set-ctext! report html) ;; cache the html
+			  (gnc:report-set-dirty?! report #f)  ;; mark it clean
+			  html)
+			#f))
+	  (format #t "Time: ~a\n" (- (tms:clock (times)) now)))
 	doc))) ;; YUK! inner doc is html-doc object; outer doc is a string.
 
 ;; looks up the report by id and renders it with gnc:report-render-html
