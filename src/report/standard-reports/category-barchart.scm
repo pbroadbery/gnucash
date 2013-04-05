@@ -1,18 +1,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; category-barchart.scm: shows barchart of income/expense categories
-;;  
+;;
 ;; By Christian Stimming <stimming@tu-harburg.de>
 ;;
-;; This program is free software; you can redistribute it and/or    
-;; modify it under the terms of the GNU General Public License as   
-;; published by the Free Software Foundation; either version 2 of   
-;; the License, or (at your option) any later version.              
-;;                                                                  
-;; This program is distributed in the hope that it will be useful,  
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of   
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the    
-;; GNU General Public License for more details.                     
-;;                                                                  
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation; either version 2 of
+;; the License, or (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, contact:
 ;;
@@ -24,6 +24,8 @@
 
 ;; depends must be outside module scope -- and should eventually go away.
 (define-module (gnucash report standard-reports category-barchart))
+(use-modules (gnucash report standard-reports reports-2))
+(use-modules (gnucash report report-system streamers))
 (use-modules (srfi srfi-1))
 (use-modules (gnucash main)) ;; FIXME: delete after we finish modularizing.
 (use-modules (ice-9 regex))
@@ -44,15 +46,15 @@
 ;; The names are used in the menu
 
 ;; The menu statusbar tips.
-(define menutip-income 
+(define menutip-income
   (N_ "Shows a barchart with the Income per interval \
 developing over time"))
-(define menutip-expense 
+(define menutip-expense
   (N_ "Shows a barchart with the Expenses per interval \
 developing over time"))
-(define menutip-assets 
+(define menutip-assets
   (N_ "Shows a barchart with the Assets developing over time"))
-(define menutip-liabilities 
+(define menutip-liabilities
   (N_ "Shows a barchart with the Liabilities \
 developing over time"))
 
@@ -85,8 +87,8 @@ developing over time"))
 (define opthelp-averaging (N_ "Select whether the amounts should be shown over the full time period or rather as the average e.g. per month"))
 
 (define (options-generator account-types reverse-balance? do-intervals?)
-  (let* ((options (gnc:new-options)) 
-         (add-option 
+  (let* ((options (gnc:new-options))
+         (add-option
           (lambda (new-option)
             (gnc:register-option options new-option))))
 
@@ -99,13 +101,13 @@ developing over time"))
      options gnc:pagename-general
      optname-from-date optname-to-date "a")
 
-    (gnc:options-add-interval-choice! 
+    (gnc:options-add-interval-choice!
      options gnc:pagename-general optname-stepsize "b" 'MonthDelta)
 
-    (gnc:options-add-currency! 
+    (gnc:options-add-currency!
      options gnc:pagename-general optname-report-currency "c")
 
-    (gnc:options-add-price-source! 
+    (gnc:options-add-price-source!
      options gnc:pagename-general
      optname-price-source "d" 'weighted-average)
 
@@ -139,17 +141,17 @@ developing over time"))
       "a"
       (N_ "Report on these accounts, if chosen account level allows.")
       (lambda ()
-        (gnc:filter-accountlist-type 
+        (gnc:filter-accountlist-type
          account-types
          (gnc-account-get-descendants-sorted (gnc-get-current-root-account))))
       (lambda (accounts)
         (list #t
               (gnc:filter-accountlist-type account-types accounts)))
       #t))
-    
-    (gnc:options-add-account-levels! 
-     options gnc:pagename-accounts optname-levels "c" 
-     (N_ "Show accounts to this depth and not further") 
+
+    (gnc:options-add-account-levels!
+     options gnc:pagename-accounts optname-levels "c"
+     (N_ "Show accounts to this depth and not further")
      2)
 
     ;; Display tab
@@ -161,8 +163,8 @@ developing over time"))
     (add-option
      (gnc:make-simple-boolean-option
       gnc:pagename-display optname-stacked
-      "b" 
-      (N_ "Show barchart as stacked barchart?") 
+      "b"
+      (N_ "Show barchart as stacked barchart?")
       #t))
 
     (add-option
@@ -178,11 +180,11 @@ developing over time"))
       "d" (N_ "Display a table of the selected data.")
       #f))
 
-    (gnc:options-add-plot-size! 
-     options gnc:pagename-display 
+    (gnc:options-add-plot-size!
+     options gnc:pagename-display
      optname-plot-width optname-plot-height "e" 400 400)
 
-    (gnc:options-add-sort-method! 
+    (gnc:options-add-sort-method!
      options gnc:pagename-display
      optname-sort-method "f" 'amount)
 
@@ -202,29 +204,29 @@ developing over time"))
 ;; constant over the whole report period. Note that this might get
 ;; *really* complicated.
 
-(define (category-barchart-renderer report-obj reportname reportguid 
+(define (category-barchart-renderer report-obj reportname reportguid
                                     account-types do-intervals?)
   ;; A helper functions for looking up option values.
   (define (get-option section name)
-    (gnc:option-value 
-     (gnc:lookup-option 
+    (gnc:option-value
+     (gnc:lookup-option
       (gnc:report-options report-obj) section name)))
-  
+
   (gnc:report-starting reportname)
-  (let ((to-date-tp (gnc:timepair-end-day-time 
+  (let ((to-date-tp (gnc:timepair-end-day-time
                      (gnc:date-option-absolute-time
-                      (get-option gnc:pagename-general 
+                      (get-option gnc:pagename-general
                                   optname-to-date))))
-        (from-date-tp (gnc:timepair-start-day-time 
+        (from-date-tp (gnc:timepair-start-day-time
                        (gnc:date-option-absolute-time
-                        (get-option gnc:pagename-general 
+                        (get-option gnc:pagename-general
                                     optname-from-date))))
         (interval (get-option gnc:pagename-general optname-stepsize))
         (report-currency (get-option gnc:pagename-general
                                      optname-report-currency))
         (price-source (get-option gnc:pagename-general
                                   optname-price-source))
-        (report-title (get-option gnc:pagename-general 
+        (report-title (get-option gnc:pagename-general
                                   gnc:optname-reportname))
         (averaging-selection (if do-intervals?
                                  (get-option gnc:pagename-general
@@ -233,7 +235,7 @@ developing over time"))
 
         (accounts (get-option gnc:pagename-accounts optname-accounts))
         (account-levels (get-option gnc:pagename-accounts optname-levels))
-        
+
         (stacked? (get-option gnc:pagename-display optname-stacked))
         (show-fullname? (get-option gnc:pagename-display optname-fullname))
         (max-slices (inexact->exact
@@ -242,18 +244,16 @@ developing over time"))
         (width (get-option gnc:pagename-display optname-plot-width))
 	(sort-method (get-option gnc:pagename-display optname-sort-method))
 	(reverse-balance? (get-option "__report" "reverse-balance?"))
-        
-	(work-done 0)
-	(work-to-do 0)
+
         (show-table? (get-option gnc:pagename-display (N_ "Show table")))
         (document (gnc:make-html-document))
         (chart (gnc:make-html-barchart))
         (table (gnc:make-html-table))
-        (topl-accounts (gnc:filter-accountlist-type 
+        (topl-accounts (gnc:filter-accountlist-type
                         account-types
                         (gnc-account-get-children-sorted
                          (gnc-get-current-root-account)))))
-    
+
     ;; Returns true if the account a was selected in the account
     ;; selection option.
     (define (show-acct? a)
@@ -261,7 +261,7 @@ developing over time"))
 
     ;;(gnc:debug accounts)
     (if (not (null? accounts))
-        
+
         ;; Define more helper variables.
         (let* ((commodity-list #f)
                (exchange-fn #f)
@@ -297,11 +297,11 @@ developing over time"))
                ;; This is the list of date intervals to calculate.
                (dates-list (if do-intervals?
                                (gnc:make-date-interval-list
-                                (gnc:timepair-start-day-time from-date-tp) 
+                                (gnc:timepair-start-day-time from-date-tp)
                                 (gnc:timepair-end-day-time to-date-tp)
                                 (gnc:deltasym-to-delta interval))
                                (gnc:make-date-list
-                                (gnc:timepair-end-day-time from-date-tp) 
+                                (gnc:timepair-end-day-time from-date-tp)
                                 (gnc:timepair-end-day-time to-date-tp)
                                 (gnc:deltasym-to-delta interval))))
                ;; Here the date strings for the x-axis labels are
@@ -315,7 +315,7 @@ developing over time"))
                      dates-list))
                (other-anchor "")
                (all-data '()))
-          
+
           ;; Converts a commodity-collector into one single double
           ;; number, depending on the report's currency and the
           ;; exchange-fn calculated above. Returns a double, multiplied
@@ -324,7 +324,9 @@ developing over time"))
           ;; the user wants to see the amounts averaged over some value.
           (define (collector->double c date)
             ;; Future improvement: Let the user choose which kind of
-            ;; currency combining she want to be done. 
+            ;; currency combining she want to be done.
+	    (if (not (gnc:timepair? date))
+		(throw 'wrong))
             (*
               (gnc-numeric-to-double
               (gnc:gnc-monetary-amount
@@ -333,34 +335,6 @@ developing over time"))
                 (lambda (a b) (exchange-fn a b date)))))
              averaging-multiplier))
 
-          ;; Calculates the net balance (profit or loss) of an account in
-          ;; the given time interval. date-list-entry is a pair containing
-          ;; the start- and end-date of that interval. If subacct?==#t,
-          ;; the subaccount's balances are included as well. Returns a
-          ;; double, exchanged into the report-currency by the above
-          ;; conversion function, and possibly with reversed sign.
-          (define (get-balance account date-list-entry subacct?)
-            ((if (reverse-balance? account)
-                 - +)
-             (if do-intervals?
-                 (collector->double
-                  (gnc:account-get-comm-balance-interval 
-                   account 
-                   (first date-list-entry) 
-                   (second date-list-entry) subacct?)
-                  (second date-list-entry))
-                 (collector->double
-                  (gnc:account-get-comm-balance-at-date
-                   account date-list-entry subacct?)
-                  date-list-entry))))
-          
-          ;; Creates the <balance-list> to be used in the function
-          ;; below. 
-          (define (account->balance-list account subacct?)
-            (map 
-             (lambda (d) (get-balance account d subacct?))
-             dates-list))
-          
 	  (define (count-accounts current-depth accts)
 	    (if (< current-depth tree-depth)
 		(let ((sum 0))
@@ -386,32 +360,37 @@ developing over time"))
           ;; show-acct? is true. This is necessary because otherwise we
           ;; would forget an account that is selected but not its
           ;; parent.
-          (define (traverse-accounts current-depth accts)
-            (if (< current-depth tree-depth)
-                (let ((res '()))
-                  (for-each
-                   (lambda (a)
-                     (begin
-		       (set! work-done (+ 1 work-done))
-		       (gnc:report-percent-done (+ 20 (* 70 (/ work-done work-to-do))))
-                       (if (show-acct? a)
-                           (set! res 
-                                 (cons (list a (account->balance-list a #f))
-                                       res)))
-                       (set! res (append
-                                  (traverse-accounts
-                                   (+ 1 current-depth)
-                                   (gnc-account-get-children a))
-                                  res))))
-                   accts)
-                  res)
-                ;; else (i.e. current-depth == tree-depth)
-                (map
-                 (lambda (a)
-		   (set! work-done (+ 1 work-done))
-		   (gnc:report-percent-done (+ 20 (* 70 (/ work-done work-to-do))))
-                   (list a (account->balance-list a #t)))
-                 (filter show-acct? accts))))
+	  (define (apply-sign account x)
+	    (if (reverse-balance? account) (- x) x))
+          (define (calculate-report accounts progress-range)
+	    (let* ((the-acount-destination-alist (account-destination-alist accounts
+									    account-types
+									    tree-depth))
+		   (account-reformat
+		    (if do-intervals?
+			(lambda (account result)
+			  (map (lambda (collector datepair)
+				 (let ((date (second datepair)))
+				   (apply-sign account (collector->double collector date))))
+			       result dates-list))
+			(lambda (account result)
+			  (let ((commodity-collector (gnc:make-commodity-collector)))
+			    (collector-end (fold (lambda (next date list-collector)
+						   (commodity-collector 'merge next #f)
+						   (collector-add list-collector
+								  (apply-sign account
+									      (collector->double commodity-collector
+												 date))))
+						 (collector-into-list)
+						 result dates-list))))))
+
+		   (the-report (category-by-account-report do-intervals?
+				dates-list the-acount-destination-alist
+				(lambda (account date)
+				  (make-gnc-collector-collector))
+				account-reformat
+				progress-range)))
+	      the-report))
 
           ;; The percentage done numbers here are a hack so that
           ;; something gets displayed. On my system the
@@ -421,29 +400,28 @@ developing over time"))
           ;; lookup should be distributed and done when actually
           ;; needed so as to amortize the cpu time properly.
 	  (gnc:report-percent-done 1)
-	  (set! commodity-list (gnc:accounts-get-commodities 
-                                (append 
+	  (set! commodity-list (gnc:accounts-get-commodities
+                                (append
                                  (gnc:acccounts-get-all-subaccounts accounts)
                                  accounts)
                                 report-currency))
-	  (set! exchange-fn (gnc:case-exchange-time-fn 
-                             price-source report-currency 
+	  (set! exchange-fn (gnc:case-exchange-time-fn
+                             price-source report-currency
                              commodity-list to-date-tp
 			     5 15))
-	  (set! work-to-do (count-accounts 1 topl-accounts))
 
           ;; Sort the account list according to the account code field.
-          (set! all-data (sort 
-                          (filter (lambda (l) 
-                                    (not (= 0.0 (apply + (cadr l))))) 
-                                  (traverse-accounts 1 topl-accounts))
+          (set! all-data (sort
+                          (filter (lambda (l)
+                                    (not (= 0.0 (apply + (cadr l)))))
+                                  (calculate-report accounts (cons 0 90)))
 			  (cond
 			   ((eq? sort-method 'acct-code)
-			    (lambda (a b) 
+			    (lambda (a b)
 			      (string<? (xaccAccountGetCode (car a))
 					(xaccAccountGetCode (car b)))))
 			   ((eq? sort-method 'alphabetical)
-			    (lambda (a b) 
+			    (lambda (a b)
 			      (string<? ((if show-fullname?
 					     gnc-account-get-full-name
 					     xaccAccountGetName) (car a))
@@ -455,20 +433,20 @@ developing over time"))
 			      (> (apply + (cadr a))
 				 (apply + (cadr b))))))))
           ;; Or rather sort by total amount?
-          ;;(< (apply + (cadr a)) 
+          ;;(< (apply + (cadr a))
           ;;   (apply + (cadr b))))))
           ;; Other sort criteria: max. amount, standard deviation of amount,
           ;; min. amount; ascending, descending. FIXME: Add user options to
           ;; choose sorting.
-          
-          
+
+
           ;;(gnc:warn "all-data" all-data)
 
           ;; Proceed if the data is non-zeros
-          (if 
+          (if
            (and (not (null? all-data))
                 (gnc:not-all-zeros (map cadr all-data)))
-           (begin 
+           (begin
              ;; Set chart title, subtitle etc.
              (gnc:html-barchart-set-title! chart report-title)
              (gnc:html-barchart-set-subtitle!
@@ -480,7 +458,7 @@ developing over time"))
                              (gnc-print-date to-date-tp)))
              (gnc:html-barchart-set-width! chart width)
              (gnc:html-barchart-set-height! chart height)
-             
+
              ;; row labels etc.
              (gnc:html-barchart-set-row-labels! chart date-string-list)
              ;; FIXME: axis labels are not yet supported by
@@ -493,14 +471,14 @@ developing over time"))
 	     ;; Doesn't do what you'd expect. - DRH
 	     ;; It does work, but needs Guppi 0.40.4. - cstim
              (gnc:html-barchart-set-legend-reversed?! chart stacked?)
-             
+
              ;; If we have too many categories, we sum them into a new
              ;; 'other' category and add a link to a new report with just
              ;; those accounts.
              (if (> (length all-data) max-slices)
                  (let* ((start (take all-data (- max-slices 1)))
                         (finish (drop all-data (- max-slices 1)))
-                        (other-sum (map 
+                        (other-sum (map
                                     (lambda (l) (apply + l))
                                     (apply zip (map cadr finish)))))
                    (set! all-data
@@ -509,27 +487,27 @@ developing over time"))
                    (let* ((options (gnc:make-report-options reportguid))
                           (id #f))
                      ;; now copy all the options
-                     (gnc:options-copy-values 
+                     (gnc:options-copy-values
                       (gnc:report-options report-obj) options)
                      ;; and set the destination accounts
                      (gnc:option-set-value
-                      (gnc:lookup-option options gnc:pagename-accounts 
+                      (gnc:lookup-option options gnc:pagename-accounts
                                          optname-accounts)
                       (map car finish))
                      ;; Set the URL to point to this report.
                      (set! id (gnc:make-report reportguid options))
                      (set! other-anchor (gnc:report-anchor-text id)))))
-             
-             
+
+
              ;; This adds the data. Note the apply-zip stuff: This
              ;; transposes the data, i.e. swaps rows and columns. Pretty
              ;; cool, eh? Courtesy of dave_p.
 	     (gnc:report-percent-done 92)
              (if (not (null? all-data))
-                 (gnc:html-barchart-set-data! 
-                  chart 
+                 (gnc:html-barchart-set-data!
+                  chart
                   (apply zip (map cadr all-data))))
-             
+
              ;; Labels and colors
 	     (gnc:report-percent-done 94)
              (gnc:html-barchart-set-col-labels!
@@ -542,21 +520,21 @@ developing over time"))
                                     xaccAccountGetName) (car pair)))
 			   'pre " " (_ "and") " " 'post))
                          all-data))
-             (gnc:html-barchart-set-col-colors! 
+             (gnc:html-barchart-set-col-colors!
               chart
               (gnc:assign-colors (length all-data)))
-             
+
              ;; set the URLs; the slices are links to other reports
 	     (gnc:report-percent-done 96)
-             (let 
+             (let
                  ((urls
-                   (map 
+                   (map
                     (lambda (pair)
-                      (if 
+                      (if
                        (string? (car pair))
                        other-anchor
                        (let* ((acct (car pair))
-                              (subaccts 
+                              (subaccts
                                (gnc-account-get-children acct)))
                          (if (null? subaccts)
                              ;; if leaf-account, make this an anchor
@@ -574,18 +552,18 @@ developing over time"))
                                      (cons acct subaccts))
                                (list gnc:pagename-accounts optname-levels
                                      (+ 1 tree-depth))
-                               (list gnc:pagename-general 
+                               (list gnc:pagename-general
                                      gnc:optname-reportname
                                      ((if show-fullname?
                                           gnc-account-get-full-name
                                           xaccAccountGetName) acct))))))))
                     all-data)))
-               (gnc:html-barchart-set-button-1-bar-urls! 
+               (gnc:html-barchart-set-button-1-bar-urls!
                 chart (append urls urls))
                ;; The legend urls do the same thing.
-               (gnc:html-barchart-set-button-1-legend-urls! 
+               (gnc:html-barchart-set-button-1-legend-urls!
                 chart (append urls urls)))
-             
+
 	     (gnc:report-percent-done 98)
              (gnc:html-document-add-object! document chart)
              (if show-table?
@@ -666,13 +644,13 @@ developing over time"))
             document
             (gnc:html-make-empty-data-warning
 	     report-title (gnc:report-id report-obj)))))
-        
+
 	;; else if no accounts selected
-        (gnc:html-document-add-object! 
-         document 
-	 (gnc:html-make-no-account-warning 
+        (gnc:html-document-add-object!
+         document
+	 (gnc:html-make-no-account-warning
 	  report-title (gnc:report-id report-obj))))
-    
+
     (gnc:report-finished)
     document))
 
@@ -686,7 +664,7 @@ developing over time"))
 (define category-barchart-asset-uuid "e9cf815f79db44bcb637d0295093ae3d")
 (define category-barchart-liability-uuid "faf410e8f8da481fbc09e4763da40bcc")
 
-(for-each 
+(for-each
  (lambda (l)
    (let ((tip-and-rev (cddddr l)))
      (gnc:define-report
@@ -698,27 +676,28 @@ developing over time"))
 		     (list gnc:menuname-asset-liability))
       'menu-name (cadddr l)
       'menu-tip (car tip-and-rev)
-      'options-generator (lambda () (options-generator (cadr l) 
+      'options-generator (lambda () (options-generator (cadr l)
                                                        (cadr tip-and-rev)
                                                        (caddr l)))
       'renderer (lambda (report-obj)
-		  (category-barchart-renderer report-obj 
+		  (category-barchart-renderer report-obj
 					      (car l)
 					      (car (reverse l))
 					      (cadr l)
 					      (caddr l))))))
- (list 
-  ;; reportname, account-types, do-intervals?, 
+ (list
+  ;; reportname, account-types, do-intervals?,
   ;; menu-reportname, menu-tip
   (list reportname-income (list ACCT-TYPE-INCOME) #t menuname-income menutip-income (lambda (x) #t) category-barchart-income-uuid)
   (list reportname-expense (list ACCT-TYPE-EXPENSE) #t menuname-expense menutip-expense (lambda (x) #f) category-barchart-expense-uuid)
-  (list reportname-assets 
+  (list reportname-assets
         (list ACCT-TYPE-ASSET ACCT-TYPE-BANK ACCT-TYPE-CASH ACCT-TYPE-CHECKING
               ACCT-TYPE-SAVINGS ACCT-TYPE-MONEYMRKT
               ACCT-TYPE-RECEIVABLE ACCT-TYPE-STOCK ACCT-TYPE-MUTUAL
               ACCT-TYPE-CURRENCY)
         #f menuname-assets menutip-assets (lambda (x) #f) category-barchart-asset-uuid)
-  (list reportname-liabilities 
+  (list reportname-liabilities
         (list ACCT-TYPE-LIABILITY ACCT-TYPE-PAYABLE ACCT-TYPE-CREDIT
               ACCT-TYPE-CREDITLINE)
         #f menuname-liabilities menutip-liabilities (lambda (x) #t) category-barchart-liability-uuid)))
+

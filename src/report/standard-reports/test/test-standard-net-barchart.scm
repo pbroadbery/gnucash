@@ -11,5 +11,5 @@
 (use-modules (gnucash report standard-reports net-barchart))
 
 (define (run-test)
-  (run-net-asset-income-test net-worth-barchart-uuid income-expense-chart-uuid))
+  (run-net-asset-income-test net-worth-barchart-uuid income-expense-barchart-uuid))
 
