@@ -49,7 +49,10 @@ gncscmreportmod_DATA = \
    sx-summary.scm \
 	 trial-balance.scm \
    transaction.scm \
-   reports-2.scm
+   reports-2.scm \
+   old-net-barchart.scm \
+   old-category-barchart.scm \
+   old-net-linechart.scm
 
 
 
