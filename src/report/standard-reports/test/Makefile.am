@@ -40,12 +40,12 @@ TESTS_ENVIRONMENT = \
 EXTRA_DIST = test-load-module
 
 SCM_TESTS = \
-	test-standard-category-report.scm \
-	test-standard-net-barchart.scm \
-	test-standard-net-linechart.scm \
 	test-old-net-linechart.scm \
 	test-old-net-barchart.scm \
-	test-old-category-report.scm
+	test-old-category-report.scm \
+	test-standard-category-report.scm \
+	test-standard-net-barchart.scm \
+	test-standard-net-linechart.scm
 
 if GNUCASH_SEPARATE_BUILDDIR
 #For executing test cases
