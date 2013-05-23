@@ -40,6 +40,9 @@ TESTS_ENVIRONMENT = \
 EXTRA_DIST = test-load-module
 
 SCM_TESTS = \
+	test-old-net-linechart.scm \
+	test-old-net-barchart.scm \
+	test-old-category-report.scm \
 	test-standard-category-report.scm \
 	test-standard-net-barchart.scm \
 	test-standard-net-linechart.scm
