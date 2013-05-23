@@ -48,8 +48,10 @@ gncscmreportmod_DATA = \
    register.scm \
    sx-summary.scm \
 	 trial-balance.scm \
-   transaction.scm
-
+   transaction.scm \
+   old-net-barchart.scm \
+   old-category-barchart.scm \
+   old-net-linechart.scm
 
 
 if GNUCASH_SEPARATE_BUILDDIR
