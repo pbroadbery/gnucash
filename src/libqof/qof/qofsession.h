@@ -169,6 +169,7 @@ typedef void (*QofPercentageFunc) (const char *message, double percent);
 void qof_session_load (QofSession *session,
                        QofPercentageFunc percentage_func);
 
+void qof_session_load_0 (QofSession *session);
 /** @name Session Errors
  @{ */
 /** The qof_session_get_error() routine can be used to obtain the reason

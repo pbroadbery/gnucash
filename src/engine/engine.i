@@ -28,6 +28,7 @@
 #include "gnc-budget.h"
 #include "gnc-commodity.h"
 #include "gnc-engine.h"
+#include "gnc-session.h"
 #include "gnc-filepath-utils.h"
 #include "gnc-pricedb.h"
 #include "gnc-lot.h"
@@ -160,7 +161,12 @@ functions. */
 
 QofSession * qof_session_new (void);
 QofBook * qof_session_get_book (QofSession *session);
+void qof_session_begin(QofSession *session, const char *book_id,
+				    gboolean ignore_lock, gboolean create,
+				    gboolean force);
+void qof_session_load_0 (QofSession *session);
 
+void gnc_set_current_session(QofSession *session);
 // TODO: Maybe unroll
 void qof_book_kvp_changed (QofBook *book);
 

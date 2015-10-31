@@ -525,6 +525,11 @@ qof_session_begin (QofSession *session, const char * book_id,
 /* ====================================================================== */
 
 void
+qof_session_load_0 (QofSession *session)
+{
+	qof_session_load(session, NULL);
+}
+void
 qof_session_load (QofSession *session,
                   QofPercentageFunc percentage_func)
 {
